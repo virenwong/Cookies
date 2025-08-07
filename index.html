@@ -1,84 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Your IP & Location Info</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f4f6fb;
-            color: #222;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background: #fff;
-            padding: 2rem 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-        }
-        h1 {
-            margin-bottom: 1.5rem;
-            font-size: 2rem;
-            color: #3a3a3a;
-        }
-        .info {
-            margin: 1rem 0;
-            font-size: 1.1rem;
-            line-height: 1.7;
-        }
-        .label {
-            font-weight: 600;
-            color: #555;
-        }
-        .error {
-            color: #c00;
-            margin-top: 1.5rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Browser Cookies Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      color: #333;
+    }
+
+    header {
+      background: #0078D4;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .cookie-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .cookie-item {
+      padding: 10px;
+      margin: 10px 0;
+      background: #f0f4f8;
+      border: 1px solid #dce3ea;
+      border-radius: 5px;
+      word-break: break-all;
+    }
+
+    .no-cookies {
+      color: #888;
+      font-style: italic;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.9em;
+      color: #777;
+      margin-top: 50px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Your IP & Location Info</h1>
-        <div id="location-info" class="info">
-            Loading...
-        </div>
-        <div id="error" class="error"></div>
-    </div>
-    <script>
-        async function fetchLocation() {
-            const infoDiv = document.getElementById('location-info');
-            const errorDiv = document.getElementById('error');
-            try {
-                // Using ipapi.co for IP and location info
-                const res = await fetch('https://ipapi.co/json/');
-                if (!res.ok) throw new Error('Failed to fetch location');
-                const data = await res.json();
-                infoDiv.innerHTML = `
-                    <div><span class="label">IP Address:</span> ${data.ip || 'N/A'}</div>
-                    <div><span class="label">Country:</span> ${data.country_name || 'N/A'} (${data.country_code || ''})</div>
-                    <div><span class="label">Region:</span> ${data.region || 'N/A'}</div>
-                    <div><span class="label">City:</span> ${data.city || 'N/A'}</div>
-                    <div><span class="label">Postal Code:</span> ${data.postal || 'N/A'}</div>
-                    <div><span class="label">Latitude:</span> ${data.latitude || 'N/A'}</div>
-                    <div><span class="label">Longitude:</span> ${data.longitude || 'N/A'}</div>
-                    <div><span class="label">Timezone:</span> ${data.timezone || 'N/A'}</div>
-                    <div><span class="label">Org/ISP:</span> ${data.org || 'N/A'}</div>
-                `;
-            } catch (err) {
-                infoDiv.textContent = '';
-                errorDiv.textContent = 'Could not retrieve location information.';
-            }
-        }
-        fetchLocation();
-    </script>
+
+  <header>
+    <h1>Cookie Inspector</h1>
+    <p>See the cookies stored in your browser for this site</p>
+  </header>
+
+  <main>
+    <h2>Cookies Found:</h2>
+    <ul id="cookieList" class="cookie-list"></ul>
+    <p id="noCookies" class="no-cookies" style="display: none;">No cookies found in this browser for this site.</p>
+  </main>
+
+  <footer>
+    &copy; 2025 CookieViewer Inc.
+  </footer>
+
+  <script>
+    function displayCookies() {
+      const cookieList = document.getElementById('cookieList');
+      const noCookiesMsg = document.getElementById('noCookies');
+      const cookies = document.cookie;
+
+      if (!cookies) {
+        noCookiesMsg.style.display = 'block';
+        return;
+      }
+
+      const cookieArray = cookies.split('; ');
+      cookieArray.forEach(cookie => {
+        const [name, ...valueParts] = cookie.split('=');
+        const value = valueParts.join('=');
+        const item = document.createElement('li');
+        item.className = 'cookie-item';
+        item.textContent = `${decodeURIComponent(name)} = ${decodeURIComponent(value)}`;
+        cookieList.appendChild(item);
+      });
+    }
+
+    displayCookies();
+  </script>
+
 </body>
 </html>
