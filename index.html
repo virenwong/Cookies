@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cookie Summary Landing Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; background: #f9f9f9; }
+        h1 { color: #333; }
+        .cookie-table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+        .cookie-table th, .cookie-table td { border: 1px solid #ccc; padding: 8px; }
+        .cookie-table th { background: #eee; }
+        .section { margin-bottom: 2em; }
+        .note { color: #888; font-size: 0.95em; }
+    </style>
+</head>
+<body>
+    <h1>Browser Cookie Summary</h1>
+    <div class="note">
+        <p>
+            This page displays cookies accessible to this site. Due to browser security, only cookies set by this domain are visible.<br>
+            <strong>Recently visited websites, news articles, and login info from other sites cannot be accessed via JavaScript for privacy reasons.</strong>
+        </p>
+    </div>
+    <div class="section">
+        <h2>All Accessible Cookies</h2>
+        <table class="cookie-table" id="cookieTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Cookies will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    <div class="section">
+        <h2>Summary</h2>
+        <ul id="summaryList">
+            <!-- Summary will be inserted here -->
+        </ul>
+    </div>
+    <script>
+        // Parse document.cookie into an array of {name, value}
+        function getCookies() {
+            return document.cookie.split(';').filter(Boolean).map(cookieStr => {
+                const [name, ...rest] = cookieStr.split('=');
+                return {
+                    name: decodeURIComponent(name.trim()),
+                    value: decodeURIComponent(rest.join('=').trim())
+                };
+            });
+        }
+
+        // Display cookies in the table
+        function displayCookies() {
+            const cookies = getCookies();
+            const tbody = document.getElementById('cookieTable').querySelector('tbody');
+            tbody.innerHTML = '';
+            if (cookies.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2">No cookies found for this site.</td></tr>';
+            } else {
+                cookies.forEach(cookie => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${cookie.name}</td><td>${cookie.value}</td>`;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        // Attempt to summarize cookies by guessing their purpose
+        function summarizeCookies() {
+            const cookies = getCookies();
+            const summary = [];
+            cookies.forEach(cookie => {
+                const n = cookie.name.toLowerCase();
+                if (n.includes('session') || n.includes('auth') || n.includes('token')) {
+                    summary.push('Possible login/session cookie: <strong>' + cookie.name + '</strong>');
+                } else if (n.includes('recent') || n.includes('visit')) {
+                    summary.push('Possible recent activity: <strong>' + cookie.name + '</strong>');
+                } else if (n.includes('news') || n.includes('article')) {
+                    summary.push('Possible news/article tracking: <strong>' + cookie.name + '</strong>');
+                }
+            });
+            const ul = document.getElementById('summaryList');
+            ul.innerHTML = summary.length
+                ? summary.map(s => `<li>${s}</li>`).join('')
+                : '<li>No recognizable cookies for login, recent visits, or news articles.</li>';
+        }
+
+        // Run on page load
+        displayCookies();
+        summarizeCookies();
+    </script>
+</body>
+</html>
