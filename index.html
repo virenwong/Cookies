@@ -2,96 +2,83 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cookie Summary Landing Page</title>
+    <title>Your IP & Location Info</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; margin: 2em; background: #f9f9f9; }
-        h1 { color: #333; }
-        .cookie-table { border-collapse: collapse; width: 100%; margin-top: 1em; }
-        .cookie-table th, .cookie-table td { border: 1px solid #ccc; padding: 8px; }
-        .cookie-table th { background: #eee; }
-        .section { margin-bottom: 2em; }
-        .note { color: #888; font-size: 0.95em; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f6fb;
+            color: #222;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            padding: 2rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            color: #3a3a3a;
+        }
+        .info {
+            margin: 1rem 0;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+        .label {
+            font-weight: 600;
+            color: #555;
+        }
+        .error {
+            color: #c00;
+            margin-top: 1.5rem;
+        }
     </style>
 </head>
 <body>
-    <h1>Browser Cookie Summary</h1>
-    <div class="note">
-        <p>
-            This page displays cookies accessible to this site. Due to browser security, only cookies set by this domain are visible.<br>
-            <strong>Recently visited websites, news articles, and login info from other sites cannot be accessed via JavaScript for privacy reasons.</strong>
-        </p>
-    </div>
-    <div class="section">
-        <h2>All Accessible Cookies</h2>
-        <table class="cookie-table" id="cookieTable">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Value</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Cookies will be inserted here -->
-            </tbody>
-        </table>
-    </div>
-    <div class="section">
-        <h2>Summary</h2>
-        <ul id="summaryList">
-            <!-- Summary will be inserted here -->
-        </ul>
+    <div class="container">
+        <h1>Your IP & Location Info</h1>
+        <div id="location-info" class="info">
+            Loading...
+        </div>
+        <div id="error" class="error"></div>
     </div>
     <script>
-        // Parse document.cookie into an array of {name, value}
-        function getCookies() {
-            return document.cookie.split(';').filter(Boolean).map(cookieStr => {
-                const [name, ...rest] = cookieStr.split('=');
-                return {
-                    name: decodeURIComponent(name.trim()),
-                    value: decodeURIComponent(rest.join('=').trim())
-                };
-            });
-        }
-
-        // Display cookies in the table
-        function displayCookies() {
-            const cookies = getCookies();
-            const tbody = document.getElementById('cookieTable').querySelector('tbody');
-            tbody.innerHTML = '';
-            if (cookies.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2">No cookies found for this site.</td></tr>';
-            } else {
-                cookies.forEach(cookie => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${cookie.name}</td><td>${cookie.value}</td>`;
-                    tbody.appendChild(tr);
-                });
+        async function fetchLocation() {
+            const infoDiv = document.getElementById('location-info');
+            const errorDiv = document.getElementById('error');
+            try {
+                // Using ipapi.co for IP and location info
+                const res = await fetch('https://ipapi.co/json/');
+                if (!res.ok) throw new Error('Failed to fetch location');
+                const data = await res.json();
+                infoDiv.innerHTML = `
+                    <div><span class="label">IP Address:</span> ${data.ip || 'N/A'}</div>
+                    <div><span class="label">Country:</span> ${data.country_name || 'N/A'} (${data.country_code || ''})</div>
+                    <div><span class="label">Region:</span> ${data.region || 'N/A'}</div>
+                    <div><span class="label">City:</span> ${data.city || 'N/A'}</div>
+                    <div><span class="label">Postal Code:</span> ${data.postal || 'N/A'}</div>
+                    <div><span class="label">Latitude:</span> ${data.latitude || 'N/A'}</div>
+                    <div><span class="label">Longitude:</span> ${data.longitude || 'N/A'}</div>
+                    <div><span class="label">Timezone:</span> ${data.timezone || 'N/A'}</div>
+                    <div><span class="label">Org/ISP:</span> ${data.org || 'N/A'}</div>
+                `;
+            } catch (err) {
+                infoDiv.textContent = '';
+                errorDiv.textContent = 'Could not retrieve location information.';
             }
         }
-
-        // Attempt to summarize cookies by guessing their purpose
-        function summarizeCookies() {
-            const cookies = getCookies();
-            const summary = [];
-            cookies.forEach(cookie => {
-                const n = cookie.name.toLowerCase();
-                if (n.includes('session') || n.includes('auth') || n.includes('token')) {
-                    summary.push('Possible login/session cookie: <strong>' + cookie.name + '</strong>');
-                } else if (n.includes('recent') || n.includes('visit')) {
-                    summary.push('Possible recent activity: <strong>' + cookie.name + '</strong>');
-                } else if (n.includes('news') || n.includes('article')) {
-                    summary.push('Possible news/article tracking: <strong>' + cookie.name + '</strong>');
-                }
-            });
-            const ul = document.getElementById('summaryList');
-            ul.innerHTML = summary.length
-                ? summary.map(s => `<li>${s}</li>`).join('')
-                : '<li>No recognizable cookies for login, recent visits, or news articles.</li>';
-        }
-
-        // Run on page load
-        displayCookies();
-        summarizeCookies();
+        fetchLocation();
     </script>
 </body>
 </html>
